@@ -18,9 +18,9 @@ def json_game_prices():
         return find_prices.find_game_prices(game_name)
 
     except IndexError:
-        return {"Index Error": "game name must be string."}
+        return {"Index Error": "Game name must be a string."}
     except TypeError:
-        return {"Type Error": "game name must be string."}
+        return {"Type Error": "Game name must be a string."}
 
 
 if __name__ == '__main__':

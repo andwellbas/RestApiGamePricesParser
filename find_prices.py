@@ -6,32 +6,32 @@ from bs4 import BeautifulSoup
 def find_game_prices(user_game_name):
 
     #   This is the name of the game in the format game+name for the request url
-    combine_name = create_game_combine(user_game_name)
+    formatted_name = format_game_name(user_game_name)
 
     #   The function returns the name of the game, the names of the stores, and the prices of the game.
     return {
             "Game Name": f"{user_game_name}",
-            "Gamers Gate": g_gate_find_price(combine_name.lower(), user_game_name),
-            "Games Planet": g_planet_find_price(combine_name.lower(), user_game_name),
-            "Win Game Store": win_g_find_price(combine_name.lower(), user_game_name),
-            "MMOGA": mmoga_find_price(combine_name.lower()),
-            "YU PLAY": yu_play_find_price(combine_name.lower()),
-            "Punktid": punktid_find_price(combine_name.lower(), user_game_name),
-            "Games for play": g_for_play(combine_name.lower())
+            "Gamers Gate": g_gate_find_price(formatted_name.lower(), user_game_name),
+            "Games Planet": g_planet_find_price(formatted_name.lower(), user_game_name),
+            "Win Game Store": win_g_find_price(formatted_name.lower(), user_game_name),
+            "MMOGA": mmoga_find_price(formatted_name.lower()),
+            "YU PLAY": yu_play_find_price(formatted_name.lower()),
+            "Punktid": punktid_find_price(formatted_name.lower(), user_game_name),
+            "Games for play": g_for_play(formatted_name.lower())
             }
 
 
 #   The function creates the name of the game in the format game+name for the request url
-def create_game_combine(game_name):
-    combine_name = game_name.replace(" ", "+").replace(":", "").replace("'", "").replace(",", "").replace("&", "")
+def format_game_name(game_name):
+    formatted_name = game_name.replace(" ", "+").replace(":", "").replace("'", "").replace(",", "").replace("&", "")
 
-    return combine_name
+    return formatted_name
 
 
 #   The function looks up the price of a game in the Gamers Gate store
-def g_gate_find_price(game, final_game_name):
+def g_gate_find_price(formatted_game_name, user_game_name):
     try:
-        url = f"https://www.gamersgate.com/games/?query={game}"
+        url = f"https://www.gamersgate.com/games/?query={formatted_game_name}"
         r = requests.get(url)
         soup = BeautifulSoup(r.text, "lxml")
         games = soup.findAll("div", class_="column catalog-item product--item")
@@ -40,7 +40,7 @@ def g_gate_find_price(game, final_game_name):
 
         for game in games:
             game_name = game.get("data-name")
-            if game_name == final_game_name:
+            if game_name == user_game_name:
                 price = f"{game.get('data-price')}$"
                 point += 1
                 return price
@@ -54,16 +54,16 @@ def g_gate_find_price(game, final_game_name):
 
 
 #   The function looks up the price of a game in the Games Planet store
-def g_planet_find_price(game, final_game_name):
+def g_planet_find_price(formatted_game_name, user_game_name):
     try:
-        url = f"https://us.gamesplanet.com/search?query={game}"
+        url = f"https://us.gamesplanet.com/search?query={formatted_game_name}"
         r = requests.get(url)
         soup = BeautifulSoup(r.text, "lxml")
         games = soup.findAll("a", class_="d-block text-decoration-none stretched-link")
 
         point = 0
         for i in games:
-            if i.text == final_game_name:
+            if i.text == user_game_name:
                 prices = soup.find("span", class_="price_current")
                 point += 1
                 price = f"{prices.text.split('$')[1]}$"
@@ -77,9 +77,9 @@ def g_planet_find_price(game, final_game_name):
 
 
 #   The function looks up the price of a game in the Win Game Store
-def win_g_find_price(game, final_game_name):
+def win_g_find_price(formatted_game_name, user_game_name):
     try:
-        url = f"https://www.wingamestore.com/search/?SearchWord={game}"
+        url = f"https://www.wingamestore.com/search/?SearchWord={formatted_game_name}"
         r = requests.get(url)
         soup = BeautifulSoup(r.text, "lxml")
         price_c = soup.find("span", class_="price").text
@@ -87,7 +87,7 @@ def win_g_find_price(game, final_game_name):
         try:
             gn_link = soup.find("a", class_="atitle").text
 
-            if gn_link[0] == final_game_name[0]:
+            if gn_link[0] == user_game_name[0]:
                 price = f"{price_c.split('$')[1]}$"
             else:
                 price = "Game not found."
@@ -97,7 +97,7 @@ def win_g_find_price(game, final_game_name):
         except AttributeError:
             gn_link = soup.find("div", class_="boxhole img16x9").get("title")
 
-            if gn_link[0] == final_game_name[0]:
+            if gn_link[0] == user_game_name[0]:
                 price = f"{price_c.split('$')[1]}$"
             else:
                 price = "Game not found."
@@ -109,9 +109,9 @@ def win_g_find_price(game, final_game_name):
 
 
 #   The function looks up the price of a game in the Games For Play store
-def g_for_play(game):
+def g_for_play(formatted_game_name):
     try:
-        url = f"https://gamesforplay.com/index.php?route=product/search&search={game}"
+        url = f"https://gamesforplay.com/index.php?route=product/search&search={formatted_game_name}"
         r = requests.get(url)
         soup = BeautifulSoup(r.text, "lxml")
 
@@ -130,9 +130,9 @@ def g_for_play(game):
 
 
 #   The function looks up the price of a game in the MMOGA store
-def mmoga_find_price(game):
+def mmoga_find_price(formatted_game_name):
     try:
-        url = f"https://www.mmoga.com/advanced_search.php?keywords={game}"
+        url = f"https://www.mmoga.com/advanced_search.php?keywords={formatted_game_name}"
         r = requests.get(url)
         soup = BeautifulSoup(r.text, "lxml")
         try:
@@ -149,9 +149,9 @@ def mmoga_find_price(game):
 
 
 #   The function looks up the price of a game in the YU PLAY store
-def yu_play_find_price(game):
+def yu_play_find_price(formatted_game_name):
     try:
-        url = f"https://www.yuplay.com/products/?search={game}"
+        url = f"https://www.yuplay.com/products/?search={formatted_game_name}"
         r = requests.get(url)
         soup = BeautifulSoup(r.text, "lxml")
         try:
@@ -166,15 +166,15 @@ def yu_play_find_price(game):
 
 
 #   The function looks up the price of a game in the Punktid store
-def punktid_find_price(game, final_game_name):
+def punktid_find_price(formatted_game_name, user_game_name):
     try:
-        url = f"https://punktid.com/search?se={game}"
+        url = f"https://punktid.com/search?se={formatted_game_name}"
         r = requests.get(url)
         soup = BeautifulSoup(r.text, "lxml")
 
         try:
             games_names = soup.find("div", class_="field field-name-title").text.split(" ")
-            split_final_name = final_game_name.split(" ")
+            split_final_name = user_game_name.split(" ")
 
             if games_names[0] == split_final_name[0]:
                 price = soup.find("span", class_="price-amount").text
